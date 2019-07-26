@@ -1,16 +1,15 @@
 package com.creyes.almacen.almacen.core.models.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GeneratorType;
-
-import javax.lang.model.element.Name;
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
-@Table(name="proveedor")
+@Table(name="producto")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,12 +31,20 @@ public class Producto implements Serializable {
     private int existencia;
     @Column(name = "imagen")
     private  String imagen;
+    @JsonIgnore
+    @OneToMany(mappedBy = "producto",fetch = FetchType.LAZY)
+    private List<Inventario> inventarios;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="codigo_categoria")
     private  Categoria categoria;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="codigo_empaque")
     private  TipoEnpaque tipoEmpaque;
-
+    @JsonIgnore
+    @OneToMany(mappedBy = "detalleProducto",fetch = FetchType.LAZY)
+    private List<DetalleCompra> detalleProductos;
+    @JsonIgnore
+    @OneToMany(mappedBy = "productoFactura",fetch = FetchType.LAZY)
+    private List<DetalleFactura> detalleFacturas;
 
 }

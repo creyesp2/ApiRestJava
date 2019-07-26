@@ -13,5 +13,5 @@ public interface IProveedorService {
     public Proveedor save(Proveedor proveedor);
     public Proveedor findById(Long id);
     public void delete(Proveedor proveedor);
-
+    public void delete(Long id);
 }

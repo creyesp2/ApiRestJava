@@ -39,4 +39,9 @@ public class ProveedorServiceImpl implements IProveedorService {
         this.proveedorDao.delete(proveedor);
 
     }
+
+    @Override
+    public void delete(Long id) {
+        this.proveedorDao.findById(id);
+    }
 }

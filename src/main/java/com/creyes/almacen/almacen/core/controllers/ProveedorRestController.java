@@ -2,6 +2,7 @@ package com.creyes.almacen.almacen.core.controllers;
 
 import com.creyes.almacen.almacen.core.models.entity.Proveedor;
 import com.creyes.almacen.almacen.core.models.services.IProveedorService;
+import io.swagger.annotations.Api;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
+@Api(tags = "proveedores")
 public class ProveedorRestController {
     private final IProveedorService proveedorService;
     public ProveedorRestController(IProveedorService proveedorService){
@@ -81,5 +83,64 @@ public class ProveedorRestController {
         return new ResponseEntity<Map<String,Object>>(response,HttpStatus.CREATED);
 
         //   return null;
+    }
+    public ResponseEntity<?> update(@Valid @RequestBody Proveedor proveedor,BindingResult result, @PathVariable Long id){
+        Map<String,Object> response=new HashMap<>();
+        Proveedor update=this.proveedorService.findById(id);
+        Proveedor proveedorUpdate=null;
+        if (result.hasErrors()){
+            List<String> errors =result.getFieldErrors()
+                    .stream()
+                    .map(err->"El campo '" + err.getField()+"'"+err.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors",errors);
+            return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
+
+        }
+
+        if(update==null){
+            response.put("mensaje","Error: no se puede editar el proveedor id ID"
+                    .concat(id.toString())
+                    .concat(" ")
+                    .concat("no existe en la base de datos"));
+            return new ResponseEntity<Map<String,Object>>(response,HttpStatus.NOT_FOUND);
+        }
+        try{
+            update.setDireccion(proveedor.getDireccion());
+            update.setRazonSocial(proveedor.getRazonSocial());
+            update.setPaginaWeb(proveedor.getPaginaWeb());
+            update.setContactoPrincipal(proveedor.getContactoPrincipal());
+            update.setEmailProveedors(proveedor.getEmailProveedors());
+            update.setTelefonoProveedors(proveedor.getTelefonoProveedors());
+            proveedorUpdate= this.proveedorService.save(update);
+
+        }catch ( DataAccessException e){
+            response.put("mensaje","error al actualizar los  datos");
+            response.put("error,e",e.getMessage().concat(":").concat(e.getMostSpecificCause().getMessage()));
+            return  new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        response.put("mensaje","el proveedor");
+        response.put("proveedor",proveedorUpdate);
+        return  new ResponseEntity<Map<String,Object>>(response,HttpStatus.CREATED);
+    }
+
+
+    @DeleteMapping("proveedores/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id){
+        Map<String,Object> response =new HashMap<>();
+
+        try{
+            this.proveedorService.delete(id);
+
+        }catch (DataAccessException e){
+
+            response.put("mensaje","error al eliminar la categoria de la base datos");
+            response.put("error",e.getMessage().concat(":").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        response.put("mensaje","la categoria fue eliminada con exito");
+        return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
+
+
     }
 }

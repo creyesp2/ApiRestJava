@@ -83,4 +83,64 @@ public class ClienteRestController {
 
         //   return null;
     }
+    public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente,BindingResult result, @PathVariable String id){
+        Map<String,Object> response=new HashMap<>();
+        Cliente update=this.clienteService.findByNit(id);
+        Cliente clienteUpdate=null;
+        if (result.hasErrors()){
+            List<String> errors =result.getFieldErrors()
+                    .stream()
+                    .map(err->"El campo '" + err.getField()+"'"+err.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors",errors);
+            return new ResponseEntity<Map<String,Object>>(response,HttpStatus.BAD_REQUEST);
+
+        }
+
+        if(update==null){
+            response.put("mensaje","Error: no se puede editar el cliente id ID"
+                    .concat(id.toString())
+                    .concat(" ")
+                    .concat("no existe en la base de datos"));
+            return new ResponseEntity<Map<String,Object>>(response,HttpStatus.NOT_FOUND);
+        }
+        try{
+            update.setDpi(cliente.getDpi());
+            update.setNombre(cliente.getNombre());
+            update.setDireccion(cliente.getDireccion());
+            update.setEmailClientes(cliente.getEmailClientes());
+            update.setTelefonoClientes(cliente.getTelefonoClientes());
+            update.setFacturaClientes(cliente.getFacturaClientes());
+
+            clienteUpdate= this.clienteService.save(update);
+
+        }catch ( DataAccessException e){
+            response.put("mensaje","error al actualizar los  datos");
+            response.put("error,e",e.getMessage().concat(":").concat(e.getMostSpecificCause().getMessage()));
+            return  new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        response.put("mensaje","el cliente");
+        response.put("categoria",clienteUpdate);
+        return  new ResponseEntity<Map<String,Object>>(response,HttpStatus.CREATED);
+    }
+
+
+    @DeleteMapping("clientes/{id}")
+    public ResponseEntity<?> delete(@PathVariable String id){
+        Map<String,Object> response =new HashMap<>();
+
+        try{
+            this.clienteService.delete(id);
+
+        }catch (DataAccessException e){
+
+            response.put("mensaje","error al eliminar la categoria de la base datos");
+            response.put("error",e.getMessage().concat(":").concat(e.getMostSpecificCause().getMessage()));
+            return new ResponseEntity<Map<String,Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        response.put("mensaje","la categoria fue eliminada con exito");
+        return new ResponseEntity<Map<String,Object>>(response,HttpStatus.OK);
+
+
+    }
 }

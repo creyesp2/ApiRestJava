@@ -12,4 +12,5 @@ public interface IClienteService {
     public  Cliente save(Cliente cliente);
     public Cliente findByNit(String nit);
     public void delete(Cliente cliente);
+    public void delete(String id);
 }
